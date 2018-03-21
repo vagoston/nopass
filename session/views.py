@@ -7,11 +7,17 @@ from django.http import HttpResponseRedirect
 from session.models import MyUser
 from .forms import LoginForm, RegisterForm
 from django.contrib.sessions.backends.db import SessionStore
-
+import qrcode
+from io import BytesIO
 
 def index(request):
     return HttpResponse()
 
+def get_qr(request):
+
+    with BytesIO() as image:
+        qrcode.make(request.session.session_key).get_image().save(image, 'PNG')
+        return HttpResponse(image.getvalue(), content_type="image/png")
 
 def session_login(request):
     if not request.session.session_key:
@@ -24,7 +30,7 @@ def session_login(request):
         if user:
             login(request, user)
             return HttpResponseRedirect('/session/check')
-    return HttpResponse(session_id)
+    return render(request, 'session.html', {'session_id': session_id})
 
 
 def register(request):

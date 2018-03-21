@@ -8,4 +8,5 @@ urlpatterns = [
     path('register', views.register, name='register'),
     path('out', views.out, name='out'),
     path('check', views.check, name='check'),
+    path('get_qr', views.get_qr, name='get_qr_for_session'),
 ]
