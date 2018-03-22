@@ -5,7 +5,7 @@ from django.contrib.auth.models import (
 
 
 class MyUserManager(BaseUserManager):
-    def create_user(self, public_key):
+    def create_user(self, public_key, jump_code):
         """
         Creates and saves a User
         """
@@ -14,6 +14,8 @@ class MyUserManager(BaseUserManager):
 
         user = self.model(
             public_key=public_key,
+            jump_code=jump_code,
+            is_compromised=False
         )
         user.set_unusable_password()
         user.save(using=self._db)
@@ -27,6 +29,13 @@ class MyUser(AbstractBaseUser):
         unique=True,
         primary_key=True,
         )
+    jump_code = models.CharField(
+        verbose_name='jump code',
+        max_length=256,
+        unique=False,
+        primary_key=False,
+        )
+    is_compromised = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
 
     objects = MyUserManager()
@@ -41,6 +50,7 @@ class MyUser(AbstractBaseUser):
         "Does the user have a specific permission?"
         # Simplest possible answer: Yes, always
         return True
+
 
     def has_module_perms(self, app_label):
         "Does the user have permissions to view the app `app_label`?"

@@ -3,6 +3,8 @@ import requests
 import pickle
 import base64
 from Crypto.Hash import SHA256
+from sys import maxsize
+from random import SystemRandom
 
 
 def main(argv):
@@ -18,6 +20,8 @@ def main(argv):
     else:
         # older versions
         csrftoken = client.cookies['csrf']
+    with open('jumpcode', 'r') as jumpcode:
+        jc = jumpcode.read()
     with open('keys/key', 'rb') as key_file:
         session_id = argv[0]
         key = pickle.load(key_file)
@@ -29,6 +33,7 @@ def main(argv):
 
         login_data = dict(session_id=session_id,
                           pk=pk,
+                          jc=jc,
                           signature=signature,
                           csrfmiddlewaretoken=csrftoken,
                           next='/session/check'
