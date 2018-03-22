@@ -26,9 +26,10 @@ def heartbeat(request):
                     user.save()
                     return HttpResponse('Done')
                 else:
-                    user.compromised = True
-                    return HttpResponseForbidden
-            return HttpResponseForbidden
+                    user.is_compromised = True
+                    user.save()
+                    return HttpResponseForbidden()
+            return HttpResponseForbidden()
 
     # if a GET (or any other method) we'll create a blank form
     else:
