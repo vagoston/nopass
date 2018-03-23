@@ -1,5 +1,5 @@
 from django.http import HttpResponse, HttpResponseForbidden
-from django.contrib.auth import login, logout
+from django.contrib.auth import logout
 from session.auth import SessionBackend
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
@@ -21,14 +21,15 @@ def heartbeat(request):
         if form.is_valid():
             if check_signature(form.cleaned_data['new_jc'], form.cleaned_data['pk'], form.cleaned_data['signature']):
                 user = MyUser.objects.get(pk=form.cleaned_data['pk'])
-                if user.jump_code == form.cleaned_data['old_jc']:
-                    user.jump_code = form.cleaned_data['new_jc']
-                    user.save()
-                    return HttpResponse('Done')
-                else:
-                    user.is_compromised = True
-                    user.save()
-                    return HttpResponseForbidden()
+                if not user.is_compromised:
+                    if user.jump_code == form.cleaned_data['old_jc']:
+                        user.jump_code = form.cleaned_data['new_jc']
+                        user.save()
+                        return HttpResponse('Done')
+                    else:
+                        user.is_compromised = True
+                        user.save()
+                        return HttpResponseForbidden()
             return HttpResponseForbidden()
 
     # if a GET (or any other method) we'll create a blank form
@@ -55,11 +56,15 @@ def session_login(request):
     session_id = request.session.session_key
     pk = request.session.get('pk')
     signature = request.session.get('signature')
+    old_jc = request.session.get('old_jc')
+    new_jc = request.session.get('new_jc')
     if pk:
-        user = SessionBackend.authenticate(request, pk=pk, signature=signature)
+        user = SessionBackend.authenticate(request, pk=pk, signature=signature, old_jc=old_jc, new_jc=new_jc)
         if user:
-            login(request, user)
+            SessionBackend.session_login(request, user)
             return HttpResponseRedirect('/session/check')
+        else:
+            return HttpResponseForbidden()
     return render(request, 'session.html', {'session_id': session_id})
 
 
@@ -90,6 +95,8 @@ def login_form(request):
         if form.is_valid():
             remote_session = SessionStore(session_key=form.cleaned_data['session_id'])
             remote_session['pk'] = form.cleaned_data['pk']
+            remote_session['old_jc'] = form.cleaned_data['old_jc']
+            remote_session['new_jc'] = form.cleaned_data['new_jc']
             remote_session['signature'] = form.cleaned_data['signature']
             remote_session.save()
             return HttpResponse('Done')

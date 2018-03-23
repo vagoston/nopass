@@ -92,8 +92,9 @@ def login(session_id):
     client = requests.session()
     client.get(url)  # sets cookie
     csrftoken = client.cookies['csrftoken']
-    with open('jumpcode', 'r') as jumpcode:
-        jc = jumpcode.read()
+    with open('jumpcode', 'r+') as jumpcode:
+        old_jumpcode = jumpcode.read()
+        new_jumpcode = str(SystemRandom().randint(1, maxsize))
         key, pk = get_keys()
         session_hash = SHA256.new(session_id.encode('utf-8')).digest()
         # TODO this is raw RSA sign, replace with PKCS1_PSS
@@ -102,12 +103,17 @@ def login(session_id):
 
         login_data = dict(session_id=session_id,
                           pk=pk,
-                          jc=jc,
+                          old_jc=old_jumpcode,
+                          new_jc=new_jumpcode,
                           signature=signature,
                           csrfmiddlewaretoken=csrftoken,
                           next='/session/check'
                           )
         r = client.post(url, data=login_data, headers=dict(Referer=url))
+        if r.status_code == 200:
+            jumpcode.seek(0)
+            jumpcode.write(new_jumpcode)
+            jumpcode.truncate()
         print("Login:", r.reason)
 
 
