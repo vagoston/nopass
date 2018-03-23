@@ -12,14 +12,17 @@ class MyUserManager(BaseUserManager):
         if not public_key:
             raise ValueError('Users must have a key')
 
-        user = self.model(
-            public_key=public_key,
-            jump_code=jump_code,
-            is_compromised=False
-        )
-        user.set_unusable_password()
-        user.save(using=self._db)
-        return user
+        try:
+            return MyUser.objects.get(pk=public_key)
+        except MyUser.DoesNotExist:
+            user = self.model(
+                public_key=public_key,
+                jump_code=jump_code,
+                is_compromised=False
+            )
+            user.set_unusable_password()
+            user.save(using=self._db)
+            return user
 
 
 class MyUser(AbstractBaseUser):
