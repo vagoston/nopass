@@ -1,7 +1,6 @@
 from django.http import HttpResponse, HttpResponseForbidden
 from django.contrib.auth import logout
-from session.auth import SessionBackend
-from django.contrib.auth.decorators import login_required
+from session.auth import SessionBackend, login_required
 from django.shortcuts import render
 from django.http import HttpResponseRedirect
 from session.models import MyUser

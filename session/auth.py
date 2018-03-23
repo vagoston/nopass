@@ -1,8 +1,11 @@
+from django.contrib.auth.decorators import user_passes_test
+
 from session.models import MyUser
 from Crypto.Hash import SHA256
 import pickle
 import base64
-from django.contrib.auth import login
+from django.contrib.auth import login, REDIRECT_FIELD_NAME
+
 
 def check_signature(data, pk, signature):
     data_hash = SHA256.new(data.encode('utf-8')).digest()
@@ -44,3 +47,18 @@ class SessionBackend(object):
             return MyUser.objects.get(pk=user_id)
         except MyUser.DoesNotExist:
             return None
+
+
+def login_required(function=None, redirect_field_name=REDIRECT_FIELD_NAME, login_url=None):
+    """
+    Decorator for views that checks that the user is logged in, redirecting
+    to the log-in page if necessary.
+    """
+    actual_decorator = user_passes_test(
+        lambda u: u.is_authenticated and not u.is_compromised,
+        login_url=login_url,
+        redirect_field_name=redirect_field_name
+    )
+    if function:
+        return actual_decorator(function)
+    return actual_decorator
