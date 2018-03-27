@@ -1,19 +1,7 @@
-from django.contrib.auth.decorators import user_passes_test
-
-from session.models import MyUser
-from Crypto.Hash import SHA256
-import pickle
-import base64
 from django.contrib.auth import login, REDIRECT_FIELD_NAME
-
-
-def check_signature(data, pk, signature):
-    data_hash = SHA256.new(data.encode('utf-8')).digest()
-    public_key = pickle.loads(base64.b64decode(pk))
-    decoded_signature = int(base64.b64decode(signature))
-    if public_key.verify(data_hash, (decoded_signature, None)):
-        return True
-    return None
+from django.contrib.auth.decorators import user_passes_test
+from crypto.helpers import *
+from session.models import MyUser
 
 
 class SessionBackend(object):
@@ -22,9 +10,9 @@ class SessionBackend(object):
     def authenticate(request, pk=None, signature=None, old_jc=None, new_jc=None):
         session_id = request.session.session_key
         try:
-            if check_signature(session_id, pk, signature):
+            if check_signature(session_id, signature, pk):
                 user = MyUser.objects.get(pk=pk)
-                if user.jump_code == old_jc:
+                if user.jump_code == old_jc and old_jc != new_jc:
                     user.jump_code = new_jc
                     user.save()
                     return user
@@ -49,7 +37,7 @@ class SessionBackend(object):
             return None
 
 
-def login_required(function=None, redirect_field_name=REDIRECT_FIELD_NAME, login_url=None):
+def login_required(lambda_function=None, redirect_field_name=REDIRECT_FIELD_NAME, login_url=None):
     """
     Decorator for views that checks that the user is logged in, redirecting
     to the log-in page if necessary.
@@ -59,6 +47,6 @@ def login_required(function=None, redirect_field_name=REDIRECT_FIELD_NAME, login
         login_url=login_url,
         redirect_field_name=redirect_field_name
     )
-    if function:
-        return actual_decorator(function)
+    if lambda_function:
+        return actual_decorator(lambda_function)
     return actual_decorator

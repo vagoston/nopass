@@ -1,32 +1,10 @@
 import sys
 import select
 import requests
-import pickle
-import base64
 from random import SystemRandom
 from sys import maxsize
-from Crypto.Hash import SHA256
-from Crypto import Random
-from Crypto.PublicKey import RSA
 import os.path
-
-
-def generate_keys():
-    with open('key', 'wb') as key_file:
-        random_generator = Random.new().read
-        key = RSA.generate(1024, random_generator)
-        pickle.dump(key, key_file)
-        with open('key.pub', 'wb') as key_pub_file:
-            pickle.dump(key.publickey(), key_pub_file)
-        print("Keys were generated.")
-
-
-def get_keys():
-    with open('key', 'rb') as key_file:
-        with open('key.pub', 'rb') as key_pub_file:
-            key = pickle.load(key_file)
-            pk = base64.b64encode(key_pub_file.read())
-            return key, pk
+from crypto.helpers import *
 
 
 def register():
@@ -44,12 +22,8 @@ def register():
     if not os.path.exists('key') or not os.path.exists('key.pub'):
         generate_keys()
     key, pk = get_keys()
-    jc_hash = SHA256.new(jc.encode('utf-8')).digest()
-    # TODO this is raw RSA sign, replace with PKCS1_PSS
-    # TODO add timestamp, check on server side
-    signature = base64.b64encode(str(key.sign(jc_hash, '')[0]).encode('utf-8'))
-
-    register_data = dict(pk=pk,
+    signature = b64(sign(jc.encode(), key))
+    register_data = dict(pk=pack(pk),
                          jc=jc,
                          signature=signature,
                          csrfmiddlewaretoken=csrftoken,
@@ -67,18 +41,14 @@ def heartbeat():
         old_jumpcode = jumpcode.read()
         new_jumpcode = str(SystemRandom().randint(1, maxsize))
         key, pk = get_keys()
-        new_jc_hash = SHA256.new(new_jumpcode.encode('utf-8')).digest()
-        # TODO this is raw RSA sign, replace with PKCS1_PSS
-        # TODO add timestamp, check on server side
-        signature = base64.b64encode(str(key.sign(new_jc_hash, '')[0]).encode('utf-8'))
-        login_data = dict(pk=pk,
+        signature = b64(sign(new_jumpcode.encode(), key))
+        login_data = dict(pk=pack(pk),
                           old_jc=old_jumpcode,
                           new_jc=new_jumpcode,
                           signature=signature,
                           csrfmiddlewaretoken=csrftoken,
                           next='/session')
         r = client.post(url, data=login_data, headers=dict(Referer=url))
-        #print(r.status_code, r.reason)
         if r.status_code == 200:
             jumpcode.seek(0)
             jumpcode.write(new_jumpcode)
@@ -96,13 +66,9 @@ def login(session_id):
         old_jumpcode = jumpcode.read()
         new_jumpcode = str(SystemRandom().randint(1, maxsize))
         key, pk = get_keys()
-        session_hash = SHA256.new(session_id.encode('utf-8')).digest()
-        # TODO this is raw RSA sign, replace with PKCS1_PSS
-        # TODO add timestamp, check on server side
-        signature = base64.b64encode(str(key.sign(session_hash, '')[0]).encode('utf-8'))
-
+        signature = b64(sign(session_id.encode(), key))
         login_data = dict(session_id=session_id,
-                          pk=pk,
+                          pk=pack(pk),
                           old_jc=old_jumpcode,
                           new_jc=new_jumpcode,
                           signature=signature,
