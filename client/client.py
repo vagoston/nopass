@@ -19,9 +19,9 @@ def register():
         with open('jumpcode', 'w') as jumpcode:
             jc = str(SystemRandom().randint(1, maxsize))
             jumpcode.write(jc)
-    if not os.path.exists('key') or not os.path.exists('key.pub'):
-        generate_keys()
+    generate_keys()
     key, pk = get_keys()
+
     signature = b64(sign(jc.encode(), key))
     register_data = dict(pk=pack(pk),
                          jc=jc,

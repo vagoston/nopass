@@ -1,10 +1,12 @@
 import base64
 import pickle
-
+from itertools import permutations
 from Crypto.Cipher import PKCS1_OAEP
 from Crypto.Signature import PKCS1_PSS
 from Crypto.Hash import SHA
 from Crypto.PublicKey import RSA
+
+from os import path, makedirs
 
 KEY_SIZE = 4096
 
@@ -40,23 +42,60 @@ def sign(string, key):
 
 
 def check_signature(string, signature, key):
-    key = unpack(key)
+    if type(key) != RSA._RSAobj:
+        key = unpack(key)
     h = SHA.new()
     if type(string) == str:
         string = string.encode()
     h.update(string)
     verifier = PKCS1_PSS.new(key)
-    return verifier.verify(h, b64decode(signature))
+    if type(signature) == str:
+        signature = b64decode(signature)
+    return verifier.verify(h, signature)
+
+
+def generate_key_on_path(directory='.', filename="key"):
+    private_path = path.join(directory, filename)
+    public_path = path.join(directory, filename + '.pub')
+    if not path.exists(directory):
+        makedirs(directory)
+    if not path.exists(private_path) or not path.exists(public_path):
+
+        with open(private_path, 'wb') as key_file:
+            key = RSA.generate(KEY_SIZE)
+            key_file.write(key.exportKey('PEM'))
+            with open(public_path, 'wb') as key_pub_file:
+                key_pub_file.write(key.publickey().exportKey('PEM'))
+            print("Keys were generated.")
+            return key.publickey()
+    else:
+        with open(public_path, 'rb') as key_pub_file:
+            pk = RSA.importKey(key_pub_file.read())
+            return pk
 
 
 def generate_keys():
-    with open('key', 'wb') as key_file:
-        key = RSA.generate(KEY_SIZE)
-        key_file.write(key.exportKey('PEM'))
-        with open('key.pub', 'wb') as key_pub_file:
-            key_pub_file.write(key.publickey().exportKey('PEM'))
-            #pickle.dump(key.publickey(), key_pub_file)
-        print("Keys were generated.")
+    generate_key_on_path()
+
+
+def generate_foreign_keys():
+    keys = []
+    for i in range(5):
+        keys.append(generate_key_on_path('foreign_keys', str(i) + 'key'))
+    return keys
+
+
+def generate_recovery_data(keys_arr, secret):
+    length = len(keys_arr)
+    encrypted_keys = []
+    for triplets in permutations(range(length), 3):
+        encrypted_keys.append(encrypt(
+                                encrypt(
+                                    encrypt(secret, keys_arr[triplets[0]]),
+                                    keys_arr[triplets[1]]),
+                                keys_arr[triplets[2]])
+                              )
+    return encrypted_keys
 
 
 def get_keys():
@@ -75,8 +114,8 @@ def b64decode(string):
     return base64.b64decode(string)
 
 
-def pack(object):
-    return b64(pickle.dumps(object))
+def pack(obj):
+    return b64(pickle.dumps(obj))
 
 
 def unpack(b64message):
