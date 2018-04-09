@@ -1,4 +1,4 @@
-"""nopass URL Configuration
+"""pwdless URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/1.11/topics/http/urls/
@@ -13,9 +13,12 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
-from django.conf.urls import url
+from django.urls import include, path
 from django.contrib import admin
+from django.contrib.auth import views as auth_views
 
 urlpatterns = [
-    url(r'^admin/', admin.site.urls),
+    # path('login/', auth_views.login, {'template_name': 'login.html'}, name='login'),
+    path('session/', include('session.urls')),
+    path('admin/', admin.site.urls),
 ]
