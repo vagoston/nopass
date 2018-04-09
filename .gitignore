@@ -1,0 +1,12 @@
+.idea/
+__pycache__/
+*.py[cod]
+client/key*
+client/jumpcode
+foreign_keys/
+recovery_data
+verification_key
+*migrations/
+db.sqlite3
+*.zip
+venv/

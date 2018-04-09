@@ -1,0 +1,10 @@
+{
+    "dev": {
+        "aws_region": "eu-west-1", 
+        "django_settings": "nopass.settings", 
+        "profile_name": "default", 
+        "project_name": "nopass", 
+        "runtime": "python2.7", 
+        "s3_bucket": "zappa-099q2mkie"
+    }
+}
