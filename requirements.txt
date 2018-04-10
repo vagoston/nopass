@@ -1,4 +1,5 @@
 Django
 zappa
+qrcode
 django-qrcode
 pycrypto

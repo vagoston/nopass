@@ -32,6 +32,7 @@ ALLOWED_HOSTS = ['s3bd4f4ova.execute-api.eu-west-1.amazonaws.com', '127.0.0.1']
 
 INSTALLED_APPS = [
     'django.contrib.auth',
+    'django.contrib.sites',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.staticfiles',
@@ -105,3 +106,5 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 LOGIN_URL = '/session/login'
+
+SITE_ID = 1

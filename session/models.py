@@ -26,17 +26,33 @@ class MyUserManager(BaseUserManager):
 
 
 class MyUser(AbstractBaseUser):
-    public_key = models.CharField(
-        verbose_name='public key',
-        max_length=1023,
+    public_key_hash = models.CharField(
+        verbose_name='public key_hash',
+        max_length=256,
         unique=True,
         primary_key=True,
         )
-    jump_code = models.CharField(
-        verbose_name='jump code',
+    public_key = models.BinaryField(
+        verbose_name='public key',
+        unique=True,
+        )
+    email_hash = models.CharField(
+        verbose_name='email hash',
         max_length=256,
+        unique=True,
+        default=None
+        )
+    user_data = models.BinaryField(
+        verbose_name='user data',
+        default=None
+        )
+    recovery_data = models.BinaryField(
+        verbose_name='data for recover lost key',
+        default=None,
+        )
+    jump_code = models.BigIntegerField(
+        verbose_name='jump code',
         unique=False,
-        primary_key=False,
         )
     is_compromised = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
