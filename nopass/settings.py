@@ -25,7 +25,7 @@ SECRET_KEY = '8-kf63*6)+mnv%r$140(021u3cls62m$3y_4t&=p=jgt&bv)^f'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.231.236']
+ALLOWED_HOSTS = ['s3bd4f4ova.execute-api.eu-west-1.amazonaws.com', '127.0.0.1']
 
 
 # Application definition
@@ -35,8 +35,8 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.staticfiles',
-    'qr_code',
-    'session'
+    'qrcode',
+    'session',
 ]
 
 MIDDLEWARE = [
@@ -103,7 +103,5 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
 
 STATIC_URL = '/static/'
-
-TEMPLATE_DIRS = (os.path.join(BASE_DIR,  'templates'),)
 
 LOGIN_URL = '/session/login'
