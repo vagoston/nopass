@@ -10,3 +10,4 @@ verification_key
 db.sqlite3
 *.zip
 venv/
+secrets.json

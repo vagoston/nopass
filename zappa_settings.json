@@ -5,6 +5,8 @@
         "profile_name": "default", 
         "project_name": "nopass", 
         "runtime": "python2.7", 
-        "s3_bucket": "zappa-099q2mkie"
+        "s3_bucket": "zappa-099q2mkie",
+        "remote_env_bucket": "nopass-secrets",
+        "remote_env_file": "secrets.json"
     }
 }

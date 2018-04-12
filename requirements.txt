@@ -1,5 +1,6 @@
 Django
 zappa
+psycopg2
 qrcode
 django-qrcode
 pycrypto
