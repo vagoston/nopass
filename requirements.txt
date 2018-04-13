@@ -2,5 +2,5 @@ Django
 zappa
 psycopg2
 qrcode
-django-qrcode
+pillow
 pycrypto

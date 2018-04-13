@@ -12,7 +12,6 @@ class SessionBackend(object):
         try:
             user = MyUser.objects.get(pk=pk_hash)
             if check_signature(session_id, signature, user.public_key):
-                user = MyUser.objects.get(pk=pk_hash)
                 if user.jump_code == old_jc and old_jc != new_jc:
                     user.jump_code = new_jc
                     user.save()

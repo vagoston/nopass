@@ -28,16 +28,17 @@ class MyUserManager(BaseUserManager):
 
 
 class MyUser(AbstractBaseUser):
-    public_key_hash = models.IntegerField(
+    public_key_hash = models.BigIntegerField(
         verbose_name='public key_hash',
         unique=True,
         primary_key=True,
         )
-    public_key = models.BinaryField(
+    public_key = models.CharField(
         verbose_name='public key',
+        max_length = 5000,
         unique=True,
         )
-    email_hash = models.IntegerField(
+    email_hash = models.BigIntegerField(
         verbose_name='email hash',
         unique=True,
         default=None

@@ -62,7 +62,7 @@ def session_login(request):
         user = SessionBackend.authenticate(request, pk_hash=pk_hash, signature=signature, old_jc=old_jc, new_jc=new_jc)
         if user:
             SessionBackend.session_login(request, user)
-            return HttpResponseRedirect('/session/check')
+            return HttpResponseRedirect('session/check')
         else:
             return HttpResponseForbidden()
     return render(request, 'session.html', {'session_id': session_id})
