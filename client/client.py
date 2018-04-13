@@ -6,9 +6,11 @@ from sys import maxsize
 import os.path
 from crypto.helpers import *
 
+HOST = 'http://127.0.0.1:8000'
 
-def register():
-    url = 'http://127.0.0.1:8000/session/register'
+
+def register(email):
+    url = HOST + '/session/register'
     client = requests.session()
     client.get(url)  # sets cookie
     csrftoken = client.cookies['csrftoken']
@@ -23,7 +25,8 @@ def register():
     key, pk = get_keys()
 
     signature = b64(sign(jc.encode(), key))
-    register_data = dict(pk=pack(pk),
+    register_data = dict(email=email,
+                         pk=pack(pk),
                          jc=jc,
                          signature=signature,
                          csrfmiddlewaretoken=csrftoken,
@@ -33,16 +36,17 @@ def register():
 
 
 def heartbeat():
-    url = 'http://127.0.0.1:8000/session/heartbeat'
+    url = HOST + '/session/heartbeat'
     client = requests.session()
     client.get(url)  # sets cookie
     csrftoken = client.cookies['csrftoken']
+    # import pdb; pdb.set_trace()
     with open('jumpcode', 'r+') as jumpcode:
         old_jumpcode = jumpcode.read()
         new_jumpcode = str(SystemRandom().randint(1, maxsize))
         key, pk = get_keys()
         signature = b64(sign(new_jumpcode.encode(), key))
-        login_data = dict(pk=pack(pk),
+        login_data = dict(pk_hash=hash(pack(pk)),
                           old_jc=old_jumpcode,
                           new_jc=new_jumpcode,
                           signature=signature,
@@ -58,7 +62,7 @@ def heartbeat():
 
 
 def login(session_id):
-    url = 'http://127.0.0.1:8000/session/login'
+    url = HOST + '/session/login'
     client = requests.session()
     client.get(url)  # sets cookie
     csrftoken = client.cookies['csrftoken']
@@ -68,7 +72,7 @@ def login(session_id):
         key, pk = get_keys()
         signature = b64(sign(session_id.encode(), key))
         login_data = dict(session_id=session_id,
-                          pk=pack(pk),
+                          pk_hash=hash(pack(pk)),
                           old_jc=old_jumpcode,
                           new_jc=new_jumpcode,
                           signature=signature,
@@ -84,7 +88,8 @@ def login(session_id):
 
 
 if __name__ == "__main__":
-    register()
+    print("Enter email address.")
+    register(sys.stdin.readline().strip())
     print("Enter session id to log in.")
     while True:
         i, o, e = select.select([sys.stdin], [], [], 10)

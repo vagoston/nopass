@@ -7,11 +7,12 @@ from session.models import MyUser
 class SessionBackend(object):
 
     @staticmethod
-    def authenticate(request, pk=None, signature=None, old_jc=None, new_jc=None):
+    def authenticate(request, pk_hash=None, signature=None, old_jc=None, new_jc=None):
         session_id = request.session.session_key
         try:
-            if check_signature(session_id, signature, pk):
-                user = MyUser.objects.get(pk=pk)
+            user = MyUser.objects.get(pk=pk_hash)
+            if check_signature(session_id, signature, user.public_key):
+                user = MyUser.objects.get(pk=pk_hash)
                 if user.jump_code == old_jc and old_jc != new_jc:
                     user.jump_code = new_jc
                     user.save()

@@ -3,20 +3,21 @@ from django import forms
 
 class LoginForm(forms.Form):
     session_id = forms.CharField(label='Session ID', max_length=100)
-    pk = forms.CharField(label='Public key', max_length=1023)
-    signature = forms.CharField(label='Signature', max_length=1023)
-    old_jc = forms.CharField(label='old Jump code', max_length=256)
-    new_jc = forms.CharField(label='new Jump code', max_length=256)
+    pk_hash = forms.IntegerField(label='Public key hash')
+    signature = forms.CharField(label='Signature', max_length=2048)
+    old_jc = forms.IntegerField(label='old Jump code')
+    new_jc = forms.IntegerField(label='new Jump code')
 
 
 class RegisterForm(forms.Form):
-    pk = forms.CharField(label='Public key', max_length=1023)
-    signature = forms.CharField(label='Jump code hash', max_length=1023)
-    jc = forms.CharField(label='Jump code', max_length=256)
+    email = forms.CharField(label='Email address')
+    pk = forms.CharField(label='Public key', max_length=2048)
+    signature = forms.CharField(label='Jump code hash', max_length=2048)
+    jc = forms.IntegerField(label='Jump code')
 
 
 class HeartBeatForm(forms.Form):
-    pk = forms.CharField(label='Public key', max_length=1023)
-    old_jc = forms.CharField(label='Previous jump code', max_length=256)
-    new_jc = forms.CharField(label='Jump code', max_length=256)
-    signature = forms.CharField(label='Signature', max_length=1023)
+    pk_hash = forms.IntegerField(label='Public key hash')
+    old_jc = forms.IntegerField(label='Previous jump code')
+    new_jc = forms.IntegerField(label='Jump code')
+    signature = forms.CharField(label='Signature', max_length=2048)

@@ -34,6 +34,8 @@ def decrypt(string, key):
 
 def sign(string, key):
     h = SHA.new()
+    if type(string) == int:
+        string = str(int)
     if type(string) == str:
         string = string.encode()
     h.update(string)
@@ -42,15 +44,19 @@ def sign(string, key):
 
 
 def check_signature(string, signature, key):
-    if type(key) != RSA._RSAobj:
+    if type(key) == bytearray or type(key) == unicode or type(key) == buffer:
         key = unpack(key)
     h = SHA.new()
+    if type(string) == int:
+        string = str(string)
     if type(string) == str:
         string = string.encode()
     h.update(string)
     verifier = PKCS1_PSS.new(key)
-    if type(signature) == str:
+    if type(signature) == unicode:
         signature = b64decode(signature)
+    if type(signature) == int:
+        signature = str(signature)
     return verifier.verify(h, signature)
 
 

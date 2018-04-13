@@ -18,9 +18,9 @@ def heartbeat(request):
         form = HeartBeatForm(request.POST)
         # check whether it's valid:
         if form.is_valid():
-            pk = form.cleaned_data['pk']
-            if check_signature(form.cleaned_data['new_jc'], form.cleaned_data['signature'], pk):
-                user = MyUser.objects.get(pk=pk)
+            pk_hash = form.cleaned_data['pk_hash']
+            user = MyUser.objects.get(pk=int(pk_hash))
+            if check_signature(form.cleaned_data['new_jc'], form.cleaned_data['signature'], user.public_key):
                 if not user.is_compromised:
                     if user.jump_code == form.cleaned_data['old_jc']:
                         user.jump_code = form.cleaned_data['new_jc']
@@ -54,12 +54,12 @@ def session_login(request):
     if not request.session.session_key:
         request.session.save()
     session_id = request.session.session_key
-    pk = request.session.get('pk')
+    pk_hash = request.session.get('pk_hash')
     signature = request.session.get('signature')
     old_jc = request.session.get('old_jc')
     new_jc = request.session.get('new_jc')
-    if pk:
-        user = SessionBackend.authenticate(request, pk=pk, signature=signature, old_jc=old_jc, new_jc=new_jc)
+    if pk_hash:
+        user = SessionBackend.authenticate(request, pk_hash=pk_hash, signature=signature, old_jc=old_jc, new_jc=new_jc)
         if user:
             SessionBackend.session_login(request, user)
             return HttpResponseRedirect('/session/check')
@@ -76,8 +76,9 @@ def register(request):
         # check whether it's valid:
         if form.is_valid():
             pk = form.cleaned_data['pk']
+            email_hash = hash(form.cleaned_data['email'])
             if check_signature(form.cleaned_data['jc'], form.cleaned_data['signature'], pk):
-                MyUser.objects.create_user(pk,
+                MyUser.objects.create_user(email_hash, pk,
                                            form.cleaned_data['jc'])
                 return HttpResponse('Done')
     # if a GET (or any other method) we'll create a blank form
@@ -94,9 +95,9 @@ def login_form(request):
         form = LoginForm(request.POST)
         # check whether it's valid:
         if form.is_valid():
-            pk = form.cleaned_data['pk']
+            pk_hash = form.cleaned_data['pk_hash']
             remote_session = SessionStore(session_key=form.cleaned_data['session_id'])
-            remote_session['pk'] = pk
+            remote_session['pk_hash'] = pk_hash
             remote_session['old_jc'] = form.cleaned_data['old_jc']
             remote_session['new_jc'] = form.cleaned_data['new_jc']
             remote_session['signature'] = form.cleaned_data['signature']
