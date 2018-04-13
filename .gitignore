@@ -8,3 +8,6 @@ recovery_data
 verification_key
 *migrations/
 db.sqlite3
+*.zip
+venv/
+secrets.json
