@@ -6,14 +6,12 @@ from sys import maxsize
 import os.path
 from crypto.helpers import *
 
-#HOST = 'http://127.0.0.1:8000'
+#   HOST = 'http://127.0.0.1:8000'
 HOST = 'https://s3bd4f4ova.execute-api.eu-west-1.amazonaws.com/dev'
 
 def register(email):
     url = HOST + '/session/register'
     client = requests.session()
-    client.get(url)  # sets cookie
-    csrftoken = client.cookies['csrftoken']
     if os.path.exists('jumpcode'):
         with open('jumpcode', 'r') as jumpcode:
             jc = jumpcode.read()
@@ -29,7 +27,6 @@ def register(email):
                          pk=pack(pk),
                          jc=jc,
                          signature=signature,
-                         csrfmiddlewaretoken=csrftoken,
                          next='/session')
     r = client.post(url, data=register_data, headers=dict(Referer=url))
     print("Registration:", r.reason)
@@ -38,8 +35,6 @@ def register(email):
 def heartbeat():
     url = HOST + '/session/heartbeat'
     client = requests.session()
-    client.get(url)  # sets cookie
-    csrftoken = client.cookies['csrftoken']
     # import pdb; pdb.set_trace()
     with open('jumpcode', 'r+') as jumpcode:
         old_jumpcode = jumpcode.read()
@@ -50,7 +45,6 @@ def heartbeat():
                           old_jc=old_jumpcode,
                           new_jc=new_jumpcode,
                           signature=signature,
-                          csrfmiddlewaretoken=csrftoken,
                           next='/session')
         r = client.post(url, data=login_data, headers=dict(Referer=url))
         if r.status_code == 200:
@@ -64,8 +58,6 @@ def heartbeat():
 def login(session_id):
     url = HOST + '/session/login'
     client = requests.session()
-    client.get(url)  # sets cookie
-    csrftoken = client.cookies['csrftoken']
     with open('jumpcode', 'r+') as jumpcode:
         old_jumpcode = jumpcode.read()
         new_jumpcode = str(SystemRandom().randint(1, maxsize))
@@ -76,7 +68,6 @@ def login(session_id):
                           old_jc=old_jumpcode,
                           new_jc=new_jumpcode,
                           signature=signature,
-                          csrfmiddlewaretoken=csrftoken,
                           next='/session/check'
                           )
         r = client.post(url, data=login_data, headers=dict(Referer=url))

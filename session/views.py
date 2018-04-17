@@ -9,8 +9,9 @@ from django.contrib.sessions.backends.db import SessionStore
 import qrcode
 from io import BytesIO
 from crypto.helpers import check_signature
+from django.views.decorators.csrf import csrf_exempt                                          
 
-
+@csrf_exempt   
 def heartbeat(request):
     # if this is a POST request we need to process the form data
     if request.method == 'POST':
@@ -49,7 +50,7 @@ def get_qr(request):
         qrcode.make(request.session.session_key).get_image().save(image, 'PNG')
         return HttpResponse(image.getvalue(), content_type="image/png")
 
-
+@csrf_exempt   
 def session_login(request):
     if not request.session.session_key:
         request.session.save()
@@ -67,7 +68,7 @@ def session_login(request):
             return HttpResponseForbidden()
     return render(request, 'session.html', {'session_id': session_id})
 
-
+@csrf_exempt   
 def register(request):
     # if this is a POST request we need to process the form data
     if request.method == 'POST':
@@ -87,7 +88,7 @@ def register(request):
 
     return render(request, 'login.html', {'form': form})
 
-
+@csrf_exempt   
 def login_form(request):
     # if this is a POST request we need to process the form data
     if request.method == 'POST':
