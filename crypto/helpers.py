@@ -121,8 +121,8 @@ def b64decode(string):
 
 
 def pack(obj):
-    return b64(pickle.dumps(obj))
+    return b64(obj.exportKey("PEM"))
 
 
 def unpack(b64message):
-    return pickle.loads(b64decode(b64message))
+    return RSA.importKey(b64decode(b64message))
