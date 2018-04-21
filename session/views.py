@@ -1,7 +1,7 @@
 from django.http import HttpResponse, HttpResponseForbidden
 from django.contrib.auth import logout
 from session.auth import SessionBackend, login_required
-from django.shortcuts import render
+from django.shortcuts import render, render_to_response
 from django.http import HttpResponseRedirect
 from session.models import MyUser
 from .forms import LoginForm, RegisterForm, HeartBeatForm
@@ -125,6 +125,11 @@ def login_form(request):
 
     return render(request, 'login.html', {'form': form})
 
+def redirect(request): 
+    if request.session.get('pk_hash'):
+        return render(request, 'redirect_top.html', {'redirect_url':'session/session_login'})
+    else:
+        return render_to_response('refresh.html')
 
 def out(request):
     logout(request)

@@ -10,4 +10,5 @@ urlpatterns = [
     url(r'out', views.out, name='out'),
     url(r'check', views.check, name='check'),
     url(r'get_qr', views.get_qr, name='get_qr_for_session'),
+    url(r'redirect', views.redirect, name='redirect'),    
 ]
