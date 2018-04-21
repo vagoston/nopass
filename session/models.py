@@ -2,7 +2,8 @@ from django.db import models
 from django.contrib.auth.models import (
     BaseUserManager, AbstractBaseUser
 )
-
+import logging
+from crypto.helpers import full_hash
 
 class MyUserManager(BaseUserManager):
     def create_user(self, email_hash, public_key, jump_code):
@@ -13,10 +14,15 @@ class MyUserManager(BaseUserManager):
             raise ValueError('Users must have a key')
 
         try:
-            return MyUser.objects.get(pk=hash(public_key))
+            return MyUser.objects.get(pk=full_hash(public_key))
         except MyUser.DoesNotExist:
+            logging.debug("create user")
+            logging.debug(email_hash)
+            logging.debug(public_key)
+            logging.debug(str(full_hash(public_key)))
+            logging.debug(jump_code)
             user = self.model(
-                public_key_hash=hash(public_key),
+                public_key_hash=full_hash(public_key),
                 email_hash=email_hash,
                 public_key=public_key,
                 jump_code=jump_code,
@@ -24,6 +30,7 @@ class MyUserManager(BaseUserManager):
             )
             user.set_unusable_password()
             user.save(using=self._db)
+            logging.debug("user created %s", user.email_hash)
             return user
 
 

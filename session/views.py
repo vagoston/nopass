@@ -9,7 +9,8 @@ from django.contrib.sessions.backends.db import SessionStore
 import qrcode
 from io import BytesIO
 from crypto.helpers import check_signature
-from django.views.decorators.csrf import csrf_exempt                                          
+from django.views.decorators.csrf import csrf_exempt
+import logging
 
 @csrf_exempt   
 def heartbeat(request):
@@ -20,7 +21,7 @@ def heartbeat(request):
         # check whether it's valid:
         if form.is_valid():
             pk_hash = form.cleaned_data['pk_hash']
-            user = MyUser.objects.get(pk=int(pk_hash))
+            user = MyUser.objects.get(pk=hash(pk_hash))
             if check_signature(form.cleaned_data['new_jc'], form.cleaned_data['signature'], user.public_key):
                 if not user.is_compromised:
                     if user.jump_code == form.cleaned_data['old_jc']:
@@ -60,12 +61,17 @@ def session_login(request):
     old_jc = request.session.get('old_jc')
     new_jc = request.session.get('new_jc')
     if pk_hash:
-        user = SessionBackend.authenticate(request, pk_hash=pk_hash, signature=signature, old_jc=old_jc, new_jc=new_jc)
-        if user:
-            SessionBackend.session_login(request, user)
-            return HttpResponseRedirect('session/check')
-        else:
-            return HttpResponseForbidden()
+        logging.debug("Authenticating")
+        logging.debug(pk_hash)
+        if not request.user.is_authenticated():
+            user = SessionBackend.authenticate(request, pk_hash=hash(pk_hash), signature=signature, old_jc=old_jc, new_jc=new_jc)
+            logging.debug("Successful")
+            if user:            
+                SessionBackend.session_login(request, user)
+                logging.debug("Logged in")
+            else:
+                return HttpResponseForbidden()
+        return HttpResponseRedirect('session/check')
     return render(request, 'session.html', {'session_id': session_id})
 
 @csrf_exempt   
@@ -76,12 +82,17 @@ def register(request):
         form = RegisterForm(request.POST)
         # check whether it's valid:
         if form.is_valid():
-            pk = form.cleaned_data['pk']
+            logging.debug("form is valid")
+            pk = form.cleaned_data['pk'] + "\n"
             email_hash = hash(form.cleaned_data['email'])
             if check_signature(form.cleaned_data['jc'], form.cleaned_data['signature'], pk):
                 MyUser.objects.create_user(email_hash, pk,
                                            form.cleaned_data['jc'])
                 return HttpResponse('Done')
+            else:
+                logging.debug("Signature check failed")
+        else:
+            logging.debug("Invalid form: %s", str(form))
     # if a GET (or any other method) we'll create a blank form
     else:
         form = RegisterForm()
@@ -96,6 +107,7 @@ def login_form(request):
         form = LoginForm(request.POST)
         # check whether it's valid:
         if form.is_valid():
+            logging.debug("Form is valid")
             pk_hash = form.cleaned_data['pk_hash']
             remote_session = SessionStore(session_key=form.cleaned_data['session_id'])
             remote_session['pk_hash'] = pk_hash
@@ -104,6 +116,8 @@ def login_form(request):
             remote_session['signature'] = form.cleaned_data['signature']
             remote_session.save()
             return HttpResponse('Done')
+        else:
+            logging.debug("Form is invalid")
 
     # if a GET (or any other method) we'll create a blank form
     else:

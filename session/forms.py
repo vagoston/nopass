@@ -3,7 +3,7 @@ from django import forms
 
 class LoginForm(forms.Form):
     session_id = forms.CharField(label='Session ID', max_length=100)
-    pk_hash = forms.IntegerField(label='Public key hash')
+    pk_hash = forms.CharField(label='Public key hash')
     signature = forms.CharField(label='Signature', max_length=2048)
     old_jc = forms.IntegerField(label='old Jump code')
     new_jc = forms.IntegerField(label='new Jump code')
@@ -17,7 +17,7 @@ class RegisterForm(forms.Form):
 
 
 class HeartBeatForm(forms.Form):
-    pk_hash = forms.IntegerField(label='Public key hash')
+    pk_hash = forms.CharField(label='Public key hash')
     old_jc = forms.IntegerField(label='Previous jump code')
     new_jc = forms.IntegerField(label='Jump code')
     signature = forms.CharField(label='Signature', max_length=2048)

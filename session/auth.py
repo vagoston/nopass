@@ -2,7 +2,7 @@ from django.contrib.auth import login, REDIRECT_FIELD_NAME
 from django.contrib.auth.decorators import user_passes_test
 from crypto.helpers import *
 from session.models import MyUser
-
+import logging
 
 class SessionBackend(object):
 
@@ -11,8 +11,12 @@ class SessionBackend(object):
         session_id = request.session.session_key
         try:
             user = MyUser.objects.get(pk=pk_hash)
+            logging.debug("user found")
             if check_signature(session_id, signature, user.public_key):
+                logging.debug("signature matched")
+                logging.debug(str(user.jump_code) + " " + str(old_jc) + " " + str(new_jc))
                 if user.jump_code == old_jc and old_jc != new_jc:
+                    logging.debug("jc mathced")
                     user.jump_code = new_jc
                     user.save()
                     return user
@@ -22,6 +26,7 @@ class SessionBackend(object):
                     return None
             return None
         except MyUser.DoesNotExist:
+            logging.debug("User does not exists:" + str(pk_hash))
             return None
 
     @staticmethod
@@ -30,9 +35,9 @@ class SessionBackend(object):
             login(request, user)
 
     @staticmethod
-    def get_user(user_id):
+    def get_user(pk_hash):
         try:
-            return MyUser.objects.get(pk=user_id)
+            return MyUser.objects.get(pk=pk_hash)
         except MyUser.DoesNotExist:
             return None
 

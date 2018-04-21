@@ -1,9 +1,10 @@
 import base64
 import pickle
+import logging
 from itertools import permutations
 from Crypto.Cipher import PKCS1_OAEP
 from Crypto.Signature import PKCS1_PSS
-from Crypto.Hash import SHA
+from Crypto.Hash import SHA256
 from Crypto.PublicKey import RSA
 
 from os import path, makedirs
@@ -33,7 +34,7 @@ def decrypt(string, key):
 
 
 def sign(string, key):
-    h = SHA.new()
+    h = SHA256.new()
     if type(string) == int:
         string = str(int)
     if type(string) == str:
@@ -44,9 +45,12 @@ def sign(string, key):
 
 
 def check_signature(string, signature, key):
+    logging.debug(string)
+    logging.debug(signature)
+    logging.debug(key)
     if type(key) == bytearray or type(key) == unicode or type(key) == buffer:
         key = unpack(key)
-    h = SHA.new()
+    h = SHA256.new()
     if type(string) == int:
         string = str(string)
     if type(string) == str:
@@ -121,8 +125,17 @@ def b64decode(string):
 
 
 def pack(obj):
-    return b64(obj.exportKey("PEM"))
+    return "\n".join(obj.exportKey("PEM").splitlines()[1:-1])
 
 
 def unpack(b64message):
-    return RSA.importKey(b64decode(b64message))
+    lines = b64message.splitlines()
+    if lines[0] != "-----BEGIN PUBLIC KEY-----":
+        lines = ["-----BEGIN PUBLIC KEY-----"] + lines + ["-----END PUBLIC KEY-----"]
+        b64message = "\n".join(lines)
+    return RSA.importKey(b64message)
+
+def full_hash(string):
+    h = SHA256.new()
+    h.update(string.encode("UTF-8"))
+    return hash(b64(h.digest()))
