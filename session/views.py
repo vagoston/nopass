@@ -56,22 +56,6 @@ def session_login(request):
     if not request.session.session_key:
         request.session.save()
     session_id = request.session.session_key
-    pk_hash = request.session.get('pk_hash')
-    signature = request.session.get('signature')
-    old_jc = request.session.get('old_jc')
-    new_jc = request.session.get('new_jc')
-    if pk_hash:
-        logging.debug("Authenticating")
-        logging.debug(pk_hash)
-        if not request.user.is_authenticated():
-            user = SessionBackend.authenticate(request, pk_hash=hash(pk_hash), signature=signature, old_jc=old_jc, new_jc=new_jc)
-            logging.debug("Successful")
-            if user:            
-                SessionBackend.session_login(request, user)
-                logging.debug("Logged in")
-            else:
-                return HttpResponseForbidden()
-        return HttpResponseRedirect('session/check')
     return render(request, 'session.html', {'session_id': session_id})
 
 @csrf_exempt   
@@ -109,13 +93,18 @@ def login_form(request):
         if form.is_valid():
             logging.debug("Form is valid")
             pk_hash = form.cleaned_data['pk_hash']
-            remote_session = SessionStore(session_key=form.cleaned_data['session_id'])
-            remote_session['pk_hash'] = pk_hash
-            remote_session['old_jc'] = form.cleaned_data['old_jc']
-            remote_session['new_jc'] = form.cleaned_data['new_jc']
-            remote_session['signature'] = form.cleaned_data['signature']
-            remote_session.save()
-            return HttpResponse('Done')
+            session_id = form.cleaned_data['session_id']
+            old_jc = form.cleaned_data['old_jc']
+            new_jc = form.cleaned_data['new_jc']
+            signature = form.cleaned_data['signature']
+            logging.debug("Authenticating")
+            user = SessionBackend.authenticate(session_id, pk_hash=hash(pk_hash), signature=signature, old_jc=old_jc, new_jc=new_jc)
+            if user:
+                logging.debug("Successful")
+                remote_session = SessionStore(session_key=session_id)
+                remote_session['user_id'] = user.pk
+                remote_session.save()
+            return HttpResponse('OK')
         else:
             logging.debug("Form is invalid")
 
@@ -125,9 +114,15 @@ def login_form(request):
 
     return render(request, 'login.html', {'form': form})
 
-def redirect(request): 
-    if request.session.get('pk_hash'):
-        return render(request, 'redirect_top.html', {'redirect_url':'session/session_login'})
+def redirect(request):
+    user_id = request.session.get('user_id')
+    logging.debug(str(user_id))
+    if user_id:
+        request.session['user_id'] = None
+        user = MyUser.objects.get(pk=user_id)
+        SessionBackend.session_login(request, user)
+        logging.debug("Logged in")
+        return render(request, 'redirect_top.html', {'redirect_url':'session/check'})
     else:
         return render_to_response('refresh.html')
 

@@ -6,8 +6,8 @@ from sys import maxsize
 import os.path
 from crypto.helpers import *
 
-#HOST = 'http://127.0.0.1:8000'
-HOST = 'https://s3bd4f4ova.execute-api.eu-west-1.amazonaws.com/dev'
+HOST = 'http://127.0.0.1:8000'
+#HOST = 'https://s3bd4f4ova.execute-api.eu-west-1.amazonaws.com/dev'
 
 def register(email):
     url = HOST + '/session/register'
@@ -63,8 +63,11 @@ def login(session_id):
         new_jumpcode = str(SystemRandom().randint(1, maxsize))
         key, pk = get_keys()
         signature = b64(sign(session_id.encode(), key))
+        h = SHA256.new()
+        h.update(pack(pk).encode("UTF-8"))
+        pk_hash = b64(h.digest())
         login_data = dict(session_id=session_id,
-                          pk_hash=hash(pack(pk)),
+                          pk_hash=pk_hash,
                           old_jc=old_jumpcode,
                           new_jc=new_jumpcode,
                           signature=signature,
@@ -87,4 +90,5 @@ if __name__ == "__main__":
         if i:
             login(sys.stdin.readline().strip())
         else:
-            heartbeat()
+            pass
+#            heartbeat()

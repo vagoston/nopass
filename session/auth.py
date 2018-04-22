@@ -7,8 +7,7 @@ import logging
 class SessionBackend(object):
 
     @staticmethod
-    def authenticate(request, pk_hash=None, signature=None, old_jc=None, new_jc=None):
-        session_id = request.session.session_key
+    def authenticate(session_id, pk_hash=None, signature=None, old_jc=None, new_jc=None):
         try:
             user = MyUser.objects.get(pk=pk_hash)
             logging.debug("user found")
@@ -33,6 +32,8 @@ class SessionBackend(object):
     def session_login(request, user):
         if not user.is_compromised:
             login(request, user)
+            logging.debug("successful login")
+        logging.debug("compromised, not logged in")
 
     @staticmethod
     def get_user(pk_hash):
