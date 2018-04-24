@@ -6,7 +6,7 @@ import logging
 from crypto.helpers import full_hash
 
 class MyUserManager(BaseUserManager):
-    def create_user(self, email_hash, public_key, jump_code):
+    def create_user(self, email_hash, public_key, jump_code, length):
         """
         Creates and saves a User
         """
@@ -26,6 +26,7 @@ class MyUserManager(BaseUserManager):
                 email_hash=email_hash,
                 public_key=public_key,
                 jump_code=jump_code,
+                length=length,
                 is_compromised=False
             )
             user.set_unusable_password()
@@ -65,6 +66,11 @@ class MyUser(AbstractBaseUser):
     jump_code = models.BigIntegerField(
         verbose_name='jump code',
         unique=False,
+        )
+    key_length = models.BigIntegerField(
+        verbose_name='length of private key',
+        unique=False,
+        default=0,
         )
     is_compromised = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)

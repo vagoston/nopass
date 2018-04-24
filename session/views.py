@@ -71,7 +71,7 @@ def register(request):
             email_hash = hash(form.cleaned_data['email'])
             if check_signature(form.cleaned_data['jc'], form.cleaned_data['signature'], pk):
                 MyUser.objects.create_user(email_hash, pk,
-                                           form.cleaned_data['jc'])
+                                           form.cleaned_data['jc'], form.cleaned_data['length'])
                 return HttpResponse('Done')
             else:
                 logging.debug("Signature check failed")
