@@ -18,5 +18,6 @@ from django.contrib import admin
 
 urlpatterns = [
     url('session/', include('session.urls')),
+    url('restore/', include('restore.urls')),
     url('admin/', admin.site.urls),
 ]

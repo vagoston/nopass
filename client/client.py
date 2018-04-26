@@ -6,8 +6,8 @@ from sys import maxsize
 import os.path
 from crypto.helpers import *
 
-HOST = 'http://127.0.0.1:8000'
-#HOST = 'https://s3bd4f4ova.execute-api.eu-west-1.amazonaws.com/dev'
+#HOST = 'http://127.0.0.1:8000'
+HOST = 'https://s3bd4f4ova.execute-api.eu-west-1.amazonaws.com/dev'
 
 def register(email):
     url = HOST + '/session/register'

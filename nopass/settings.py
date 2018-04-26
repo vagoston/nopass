@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'qrcode',
     'session',
+    'restore',
 ]
 
 MIDDLEWARE = [

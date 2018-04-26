@@ -14,7 +14,7 @@ class RegisterForm(forms.Form):
     pk = forms.CharField(label='Public key', max_length=2048)
     signature = forms.CharField(label='Jump code hash', max_length=2048)
     jc = forms.IntegerField(label='Jump code')
-    lenght = forms.IntegerField(label='Private key length')
+    length = forms.IntegerField(label='Private key length')
 
 
 class HeartBeatForm(forms.Form):
@@ -22,3 +22,4 @@ class HeartBeatForm(forms.Form):
     old_jc = forms.IntegerField(label='Previous jump code')
     new_jc = forms.IntegerField(label='Jump code')
     signature = forms.CharField(label='Signature', max_length=2048)
+

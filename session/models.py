@@ -49,7 +49,7 @@ class MyUser(AbstractBaseUser):
     email_hash = models.BigIntegerField(
         verbose_name='email hash',
         unique=True,
-        default=None
+        default=None,
         )
     user_data = models.BinaryField(
         verbose_name='user data',
