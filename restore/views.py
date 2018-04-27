@@ -17,17 +17,17 @@ def upload(request):
         logging.debug("form is valid")
         pk = form.cleaned_data['pk']+ "\n"
         wpk = form.cleaned_data['wpk'] + "\n"
-        esk = form.cleaned_data['esk']
+        esk = form.cleaned_data['esk'] + "\n"
         index = form.cleaned_data['index']
-        shard = form.cleaned_data['shard']
+        shard = form.cleaned_data['shard'] + "\n"
         data = pk + str(index) + wpk + esk + shard
         if check_signature(data, form.cleaned_data['signature'], pk):
-            Shard.objects.create(
-                pk=full_hash(pk), 
-                wpk=full_hash(wpk),
+             Shard.objects.create(
+                owner=full_hash(pk), 
                 index=index,  
                 esk=esk,
                 # iv=iv,
+                witness=full_hash(wpk),
                 shard=shard)
         else:
             logging.debug("Signature check failed")

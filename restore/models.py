@@ -9,7 +9,7 @@ class Shard(models.Model):
     id =  models.AutoField(primary_key=True)
     owner = models.CharField(max_length=200)
     index = models.IntegerField()
-    esk = models.CharField(max_length=256)
+    esk = models.CharField(max_length=1000)
     # iv = models.CharField(max_length=256)
     witness = models.CharField(max_length=200)
     shard = models.CharField(max_length=1000)

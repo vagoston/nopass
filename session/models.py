@@ -6,7 +6,7 @@ import logging
 from crypto.helpers import full_hash
 
 class MyUserManager(BaseUserManager):
-    def create_user(self, email_hash, public_key, jump_code, length):
+    def create_user(self, email_hash, public_key, jump_code, key_length):
         """
         Creates and saves a User
         """
@@ -26,7 +26,7 @@ class MyUserManager(BaseUserManager):
                 email_hash=email_hash,
                 public_key=public_key,
                 jump_code=jump_code,
-                length=length,
+                key_length=key_length,
                 is_compromised=False
             )
             user.set_unusable_password()
