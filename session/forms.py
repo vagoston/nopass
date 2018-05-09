@@ -12,7 +12,7 @@ class LoginForm(forms.Form):
 class RegisterForm(forms.Form):
     email = forms.CharField(label='Email address')
     pk = forms.CharField(label='Public key', max_length=2048)
-    signature = forms.CharField(label='Jump code hash', max_length=2048)
+    signature = forms.CharField(label='Jump code signature', max_length=2048)
     jc = forms.IntegerField(label='Jump code')
     length = forms.IntegerField(label='Private key length')
 

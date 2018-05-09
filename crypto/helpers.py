@@ -125,7 +125,7 @@ def b64decode(string):
 
 
 def pack(obj):
-    return "\n".join(obj.exportKey("PEM").splitlines()[1:-1])
+    return "\n".join(obj.exportKey("PEM").splitlines()[1:-1]) + "\n"
 
 
 def unpack(b64message):
@@ -135,7 +135,12 @@ def unpack(b64message):
         b64message = "\n".join(lines)
     return RSA.importKey(b64message)
 
-def full_hash(string):
+
+def sha_hash(string):
     h = SHA256.new()
     h.update(string.encode("UTF-8"))
-    return hash(b64(h.digest()))
+    return b64(h.digest())
+
+
+def full_hash(string):
+    return hash(sha_hash(string))

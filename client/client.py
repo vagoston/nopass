@@ -21,13 +21,13 @@ def register(email):
             jumpcode.write(jc)
     generate_keys()
     key, pk = get_keys()
-
+    length = len(key.exportKey('PEM'))
     signature = b64(sign(jc.encode(), key))
     register_data = dict(email=email,
                          pk=pack(pk),
                          jc=jc,
                          signature=signature,
-                         next='/session')
+                         length=length)
     r = client.post(url, data=register_data, headers=dict(Referer=url))
     print("Registration:", r.reason)
 
@@ -41,7 +41,7 @@ def heartbeat():
         new_jumpcode = str(SystemRandom().randint(1, maxsize))
         key, pk = get_keys()
         signature = b64(sign(new_jumpcode.encode(), key))
-        login_data = dict(pk_hash=hash(pack(pk)),
+        login_data = dict(pk_hash=sha_hash(pack(pk)),
                           old_jc=old_jumpcode,
                           new_jc=new_jumpcode,
                           signature=signature,
@@ -65,7 +65,7 @@ def login(session_id):
         signature = b64(sign(session_id.encode(), key))
         h = SHA256.new()
         h.update(pack(pk).encode("UTF-8"))
-        pk_hash = b64(h.digest())
+        pk_hash = sha_hash(pack(pk))
         login_data = dict(session_id=session_id,
                           pk_hash=pk_hash,
                           old_jc=old_jumpcode,
